@@ -29,7 +29,6 @@ namespace Rescue_Maze
 
                 Arena.ShowMap();
                 robot.Step();
-                Thread.Sleep(75);
             }
             
         }

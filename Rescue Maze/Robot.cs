@@ -13,8 +13,8 @@ namespace Rescue_Maze
         int mapHeight;
         Direction direction;
         int StartingX, StartingY, x, y;
-        bool IsAutonomous = true;
 
+        bool IsAutonomous = true;
         bool GoInitial = false;
 
         public Robot(int MapWidth, int MapHeight)
@@ -115,16 +115,20 @@ namespace Rescue_Maze
                         Top = (map[floodTile.x, floodTile.y - 1].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y - 1] == null || floodFill.tile[floodTile.x, floodTile.y - 1].i > i));
 
                         if (Left)
-                            floodFill.AddTile(floodTile.x - 1, floodTile.y, i + 1, floodTile.id);
+                            if (map[floodTile.x - 1, floodTile.y].tileType != TileType.Black)
+                                floodFill.AddTile(floodTile.x - 1, floodTile.y, i + 1, floodTile.id);
 
                         if (Right)
-                            floodFill.AddTile(floodTile.x + 1, floodTile.y, i + 1, floodTile.id);
+                            if (map[floodTile.x + 1, floodTile.y].tileType != TileType.Black)
+                                floodFill.AddTile(floodTile.x + 1, floodTile.y, i + 1, floodTile.id);
 
                         if (Bottom)
-                            floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
+                            if (map[floodTile.x, floodTile.y + 1].tileType != TileType.Black)
+                                floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
 
                         if (Top)
-                            floodFill.AddTile(floodTile.x, floodTile.y - 1, i + 1, floodTile.id);
+                            if (map[floodTile.x, floodTile.y - 1].tileType != TileType.Black)
+                                floodFill.AddTile(floodTile.x, floodTile.y - 1, i + 1, floodTile.id);
 
                         lastTile = floodTile;
                     }
@@ -228,16 +232,20 @@ namespace Rescue_Maze
                     Top = (map[floodTile.x, floodTile.y - 1].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y - 1] == null || floodFill.tile[floodTile.x, floodTile.y - 1].i > i));
 
                     if (Left)
-                        floodFill.AddTile(floodTile.x - 1, floodTile.y, i + 1, floodTile.id);
+                        if (map[floodTile.x - 1, floodTile.y].tileType != TileType.Black)
+                            floodFill.AddTile(floodTile.x - 1, floodTile.y, i + 1, floodTile.id);
 
                     if (Right)
-                        floodFill.AddTile(floodTile.x + 1, floodTile.y, i + 1, floodTile.id);
+                        if (map[floodTile.x + 1, floodTile.y].tileType != TileType.Black)
+                            floodFill.AddTile(floodTile.x + 1, floodTile.y, i + 1, floodTile.id);
 
                     if (Bottom)
-                        floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
+                        if (map[floodTile.x, floodTile.y + 1].tileType != TileType.Black)
+                            floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
 
                     if (Top)
-                        floodFill.AddTile(floodTile.x, floodTile.y - 1, i + 1, floodTile.id);
+                        if (map[floodTile.x, floodTile.y - 1].tileType != TileType.Black)
+                            floodFill.AddTile(floodTile.x, floodTile.y - 1, i + 1, floodTile.id);
 
                     lastTile = floodTile;
                 }
@@ -306,12 +314,6 @@ namespace Rescue_Maze
                     RotateRight();
                 return;
             }
-        }
-
-        void GetTileInfo()
-        {
-            RegisterWalls();
-            GetTileType();
         }
 
         void ManualMove()
@@ -452,6 +454,12 @@ namespace Rescue_Maze
 
         #region Tile Information
 
+        void GetTileInfo()
+        {
+            RegisterWalls();
+            GetTileType();
+        }
+
         void GetTileType()
         {
             map[x, y].tileType = Arena.GetFloor();
@@ -528,7 +536,15 @@ namespace Rescue_Maze
                 MoveForward();
                 Arena.MoveTile();
             }
-                
+
+            GetTileInfo();
+
+            if (map[x,y].tileType == TileType.Black)
+            {
+                RotateLeft();
+                RotateLeft();
+                MoveTile();
+            }
         }
 
         void MoveForward()

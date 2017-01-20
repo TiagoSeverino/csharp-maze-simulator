@@ -28,6 +28,8 @@ namespace Rescue_Maze
 
             InitializeTiles();
             GenerateTiles();
+
+            GenerateRamp();
             CloseWalls();
         }
 
@@ -69,21 +71,62 @@ namespace Rescue_Maze
 
         static void CloseWalls()
         {
-            //Close Left
+            //Close Left and Right
             for (int y = 0; y<height; y++)
+            {
                 map[0, y].RightWall = Wall.Yes;
-
-            //Close Right
-            for (int y = 0; y<height; y++)
                 map[width - 1, y].RightWall = Wall.Yes;
+            }
 
-            //Close Top
+            //Close Top and Bottom
             for (int x = 0; x<width; x++)
+            {
                 map[x, 0].BottomWall = Wall.Yes;
-
-            //Close Bottom
-            for (int x = 0; x<width; x++)
                 map[x, height - 1].BottomWall = Wall.Yes;
+            }
+        }
+
+        static void GenerateRamp()
+        {
+            for(int i = 0; i < height; i++)
+            {
+                map[width / 2 - 1, i].RightWall = Wall.Yes;
+            }
+
+            if (new Random().Next(0, 2) == 0)
+            {
+                //Add Ramp Bottom
+                for (int x = 1; x < width; x++)
+                {
+                    map[x, height - 1].RightWall = Wall.No;
+                    map[x, height - 2].BottomWall = Wall.Yes;
+                    map[x, height - 1].Type = TileType.White;
+                }
+
+                //Ramp Connectors
+                map[width / 4, height - 2].BottomWall = Wall.No;
+                map[width / 4 * 3, height - 2].BottomWall = Wall.No;
+
+                map[width / 4 - 1, height - 1].RightWall = Wall.Yes;
+                map[width / 4 * 3, height - 1].RightWall = Wall.Yes;
+            }
+            else
+            {
+                //Add Ramp Top
+                for (int x = 1; x < width; x++)
+                {
+                    map[x, 1].RightWall = Wall.No;
+                    map[x, 1].BottomWall = Wall.Yes;
+                    map[x, 1].Type = TileType.White;
+                }
+
+                //Ramp Connectors
+                map[width / 4, 1].BottomWall = Wall.No;
+                map[width / 4 * 3, 1].BottomWall = Wall.No;
+
+                map[width / 4 - 1, 1].RightWall = Wall.Yes;
+                map[width / 4 * 3, 1].RightWall = Wall.Yes;
+            }
         }
 
         #endregion
