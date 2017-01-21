@@ -114,17 +114,18 @@ namespace Rescue_Maze
                         Bottom = (map[floodTile.x, floodTile.y].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y + 1] == null || floodFill.tile[floodTile.x, floodTile.y + 1].i > i));
                         Top = (map[floodTile.x, floodTile.y - 1].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y - 1] == null || floodFill.tile[floodTile.x, floodTile.y - 1].i > i));
 
-                        if (Left)
-                            if (map[floodTile.x - 1, floodTile.y].tileType != TileType.Black)
-                                floodFill.AddTile(floodTile.x - 1, floodTile.y, i + 1, floodTile.id);
+                        
+                        if (Bottom)
+                            if (map[floodTile.x, floodTile.y + 1].tileType != TileType.Black)
+                                floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
 
                         if (Right)
                             if (map[floodTile.x + 1, floodTile.y].tileType != TileType.Black)
                                 floodFill.AddTile(floodTile.x + 1, floodTile.y, i + 1, floodTile.id);
 
-                        if (Bottom)
-                            if (map[floodTile.x, floodTile.y + 1].tileType != TileType.Black)
-                                floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
+                        if (Left)
+                            if (map[floodTile.x - 1, floodTile.y].tileType != TileType.Black)
+                                floodFill.AddTile(floodTile.x - 1, floodTile.y, i + 1, floodTile.id);
 
                         if (Top)
                             if (map[floodTile.x, floodTile.y - 1].tileType != TileType.Black)
@@ -231,17 +232,17 @@ namespace Rescue_Maze
                     Bottom = (map[floodTile.x, floodTile.y].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y + 1] == null || floodFill.tile[floodTile.x, floodTile.y + 1].i > i));
                     Top = (map[floodTile.x, floodTile.y - 1].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y - 1] == null || floodFill.tile[floodTile.x, floodTile.y - 1].i > i));
 
-                    if (Left)
-                        if (map[floodTile.x - 1, floodTile.y].tileType != TileType.Black)
-                            floodFill.AddTile(floodTile.x - 1, floodTile.y, i + 1, floodTile.id);
+                    if (Bottom)
+                        if (map[floodTile.x, floodTile.y + 1].tileType != TileType.Black)
+                            floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
 
                     if (Right)
                         if (map[floodTile.x + 1, floodTile.y].tileType != TileType.Black)
                             floodFill.AddTile(floodTile.x + 1, floodTile.y, i + 1, floodTile.id);
 
-                    if (Bottom)
-                        if (map[floodTile.x, floodTile.y + 1].tileType != TileType.Black)
-                            floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
+                    if (Left)
+                        if (map[floodTile.x - 1, floodTile.y].tileType != TileType.Black)
+                            floodFill.AddTile(floodTile.x - 1, floodTile.y, i + 1, floodTile.id);
 
                     if (Top)
                         if (map[floodTile.x, floodTile.y - 1].tileType != TileType.Black)
