@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace Rescue_Maze
 {
     class Robot
@@ -49,43 +48,27 @@ namespace Rescue_Maze
             y = StartingY;
 
             GetTileInfo();
+            RotateToUnknownWall();
+            GetTileInfo();
+
+            map[x, y].tileType = TileType.Starting;
         }
 
         public void Step()
-            {
+        {
             if (IsAutonomous)
-                if (KnowsAllTiles())
-                {
-                    if (GoInitial)
-                    {
-                        ReturnInitialTile();
-
-                        if(x == StartingX && y == StartingY)
-                            IsAutonomous = false;
-                        else
-                            MoveTile();
-                    }
-                    else
-                    {
-                        if (NearVoidTile())
-                            RotateNextTile();
-                        else
-                            FloodFillVoidTile();
-
-                        MoveTile();
-                        GetTileInfo();
-                    }
-                }
+                if (GoInitial)
+                    MovePath(TileType.Starting);
                 else
-                {
-                    RotateToUnknownWall();
-                    GetTileInfo();
-                }
+                    if (NearVoidTile())
+                        RotateNextTile();
+                    else
+                        MovePath(TileType.Void);
             else
                 ManualMove();
         }
 
-        void FloodFillVoidTile()
+        void MovePath(int tileType)
         {
             FloodFill floodFill = new FloodFill(mapWidth, mapHeight);
             floodFill.AddTile(x, y, 0, 0);
@@ -96,11 +79,11 @@ namespace Rescue_Maze
 
             for (int i = 0; !TileFound; i++)
             {
-                if(floodFill.GetFloodAt(i).Count > 0)
+                if (floodFill.GetFloodAt(i).Count > 0)
                 {
                     foreach (FloodTile floodTile in floodFill.GetFloodAt(i))
                     {
-                        if (map[floodTile.x, floodTile.y].tileType == TileType.Void)
+                        if((tileType == TileType.Starting) ? floodTile.x == StartingX && floodTile.y == StartingY : map[floodTile.x, floodTile.y].tileType == TileType.Void)
                         {
                             TileFound = true;
                             lastTile = floodTile;
@@ -114,7 +97,7 @@ namespace Rescue_Maze
                         Bottom = (map[floodTile.x, floodTile.y].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y + 1] == null || floodFill.tile[floodTile.x, floodTile.y + 1].i > i));
                         Top = (map[floodTile.x, floodTile.y - 1].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y - 1] == null || floodFill.tile[floodTile.x, floodTile.y - 1].i > i));
 
-                        
+
                         if (Bottom)
                             if (map[floodTile.x, floodTile.y + 1].tileType != TileType.Black)
                                 floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
@@ -141,129 +124,36 @@ namespace Rescue_Maze
                 }
             }
 
-            while(lastTile.i > 1)
+            List<FloodTile> path = new List<FloodTile>();
+
+            FloodTile originalLastTile = lastTile;
+
+            for(int i = 1; i <= floodFill.GetLastTileNumber(); i++)
             {
-                foreach (FloodTile floodTile in floodFill.GetFloodAt(lastTile.i - 1))
+                lastTile = originalLastTile;
+                while (lastTile.i > i)
                 {
-                    if (floodTile.id == lastTile.parentID)
+                    foreach (FloodTile floodTile in floodFill.GetFloodAt(lastTile.i - 1))
                     {
-                        lastTile = floodTile;
-                        break;
+                        if (floodTile.id == lastTile.parentID)
+                        {
+                            lastTile = floodTile;
+                            break;
+                        }
                     }
                 }
+                path.Add(lastTile);
             }
 
-            if (lastTile.x < x)
-            {
-                if (direction.CurrentDirection == Direction.Right)
-                    RotateLeft();
+            foreach(FloodTile floodTile in path)
+                MoveNextTile(floodTile);
 
-                if (direction.CurrentDirection == Direction.Up)
-                    RotateLeft();
-
-                if (direction.CurrentDirection == Direction.Down)
-                    RotateRight();
-                return;
-            }
-
-            if (lastTile.x > x)
-            {
-                if (direction.CurrentDirection == Direction.Left)
-                    RotateLeft();
-
-                if (direction.CurrentDirection == Direction.Up)
-                    RotateRight();
-
-                if (direction.CurrentDirection == Direction.Down)
-                    RotateLeft();
-                return;
-            }
-
-            if (lastTile.y < y)
-            {
-                if (direction.CurrentDirection == Direction.Down)
-                    RotateLeft();
-
-                if (direction.CurrentDirection == Direction.Left)
-                    RotateRight();
-
-                if (direction.CurrentDirection == Direction.Right)
-                    RotateLeft();
-                return;
-            }
-
-            if (lastTile.y > y)
-            {
-                if (direction.CurrentDirection == Direction.Up)
-                    RotateLeft();
-
-                if (direction.CurrentDirection == Direction.Left)
-                    RotateLeft();
-
-                if (direction.CurrentDirection == Direction.Right)
-                    RotateRight();
-                return;
-            }
+            if (tileType == TileType.Starting && x == StartingX && y == StartingY)
+                IsAutonomous = false;
         }
 
-        void ReturnInitialTile()
+        void MoveNextTile(FloodTile lastTile)
         {
-            FloodFill floodFill = new FloodFill(mapWidth, mapHeight);
-            floodFill.AddTile(x, y, 0, 0);
-
-            bool TileFound = false;
-
-            FloodTile lastTile = floodFill.GetFloodAt(0)[0];
-            for(int i = 0; !TileFound; i++)
-            {
-                foreach (FloodTile floodTile in floodFill.GetFloodAt(i))
-                {
-                    if (floodTile.x == StartingX && floodTile.y == StartingY)
-                    {
-                        TileFound = true;
-                        lastTile = floodTile;
-                        break;
-                    }
-
-                    bool Left, Right, Bottom, Top;
-
-                    Left = (map[floodTile.x - 1, floodTile.y].rightWall == Wall.No && (floodFill.tile[floodTile.x - 1, floodTile.y] == null || floodFill.tile[floodTile.x - 1, floodTile.y].i > i));
-                    Right = (map[floodTile.x, floodTile.y].rightWall == Wall.No && (floodFill.tile[floodTile.x + 1, floodTile.y] == null || floodFill.tile[floodTile.x + 1, floodTile.y].i > i));
-                    Bottom = (map[floodTile.x, floodTile.y].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y + 1] == null || floodFill.tile[floodTile.x, floodTile.y + 1].i > i));
-                    Top = (map[floodTile.x, floodTile.y - 1].bottomWall == Wall.No && (floodFill.tile[floodTile.x, floodTile.y - 1] == null || floodFill.tile[floodTile.x, floodTile.y - 1].i > i));
-
-                    if (Bottom)
-                        if (map[floodTile.x, floodTile.y + 1].tileType != TileType.Black)
-                            floodFill.AddTile(floodTile.x, floodTile.y + 1, i + 1, floodTile.id);
-
-                    if (Right)
-                        if (map[floodTile.x + 1, floodTile.y].tileType != TileType.Black)
-                            floodFill.AddTile(floodTile.x + 1, floodTile.y, i + 1, floodTile.id);
-
-                    if (Left)
-                        if (map[floodTile.x - 1, floodTile.y].tileType != TileType.Black)
-                            floodFill.AddTile(floodTile.x - 1, floodTile.y, i + 1, floodTile.id);
-
-                    if (Top)
-                        if (map[floodTile.x, floodTile.y - 1].tileType != TileType.Black)
-                            floodFill.AddTile(floodTile.x, floodTile.y - 1, i + 1, floodTile.id);
-
-                    lastTile = floodTile;
-                }
-            }
-
-            while (lastTile.i > 1)
-            {
-                foreach (FloodTile floodTile in floodFill.GetFloodAt(lastTile.i - 1))
-                {
-                    if (floodTile.id == lastTile.parentID)
-                    {
-                        lastTile = floodTile;
-                        break;
-                    }
-                }
-            }
-
             if (lastTile.x < x)
             {
                 if (direction.CurrentDirection == Direction.Right)
@@ -274,7 +164,6 @@ namespace Rescue_Maze
 
                 if (direction.CurrentDirection == Direction.Down)
                     RotateRight();
-                return;
             }
 
             if (lastTile.x > x)
@@ -287,7 +176,6 @@ namespace Rescue_Maze
 
                 if (direction.CurrentDirection == Direction.Down)
                     RotateLeft();
-                return;
             }
 
             if (lastTile.y < y)
@@ -300,7 +188,6 @@ namespace Rescue_Maze
 
                 if (direction.CurrentDirection == Direction.Right)
                     RotateLeft();
-                return;
             }
 
             if (lastTile.y > y)
@@ -313,8 +200,9 @@ namespace Rescue_Maze
 
                 if (direction.CurrentDirection == Direction.Right)
                     RotateRight();
-                return;
             }
+
+            MoveTile();
         }
 
         void ManualMove()
@@ -354,6 +242,8 @@ namespace Rescue_Maze
                 if (direction.CurrentDirection == Direction.Right)
                     RotateRight();
 
+                MoveTile();
+
                 return;
             }
 
@@ -367,6 +257,8 @@ namespace Rescue_Maze
 
                 if (direction.CurrentDirection == Direction.Up)
                     RotateRight();
+
+                MoveTile();
 
                 return;
             }
@@ -382,6 +274,8 @@ namespace Rescue_Maze
                 if (direction.CurrentDirection == Direction.Down)
                     RotateRight();
 
+                MoveTile();
+
                 return;
             }
 
@@ -395,6 +289,8 @@ namespace Rescue_Maze
 
                 if (direction.CurrentDirection == Direction.Left)
                     RotateRight();
+
+                MoveTile();
 
                 return;
             }
@@ -485,11 +381,6 @@ namespace Rescue_Maze
             }
         }
 
-        bool KnowsAllTiles()
-        {
-            return (map[x - 1, y].rightWall != Wall.Unknown && map[x, y - 1].bottomWall != Wall.Unknown && map[x, y].rightWall != Wall.Unknown && map[x, y].bottomWall != Wall.Unknown);
-        }
-
         void RegisterWallFromTop()
         {
             Sonar sonar = Arena.GetTiles();
@@ -536,6 +427,7 @@ namespace Rescue_Maze
             {
                 MoveForward();
                 Arena.MoveTile();
+                GetTileInfo();
             }
 
             GetTileInfo();

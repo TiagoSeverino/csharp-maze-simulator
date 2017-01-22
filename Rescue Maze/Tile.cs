@@ -26,5 +26,6 @@ namespace Rescue_Maze
         public const int Void = 0;
         public const int White = 1;
         public const int Black = 2;
+        public const int Starting = 3;
     }
 }
