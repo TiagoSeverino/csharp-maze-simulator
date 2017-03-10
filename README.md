@@ -1,4 +1,4 @@
-# RCJ-Rescue-Maze-2017
+# RCJ-Rescue-Maze-Simulator-2017
 Robocup Junior Rescue Maze Simulator using Flood Fill algorithm
 It generates a new Arena everytime and the Robot must navigate throught every possible tile and in the end return to initial tile
 
